@@ -3,6 +3,8 @@
 #include <math.h>
 #include "CentralityMeasures.h"
 
+int *visited; //will be a global array for the recursive dfs reach function
+
 NodeValues *newCentralityStruct(int num_nodes) {
 	NodeValues *new = malloc(sizeof(NodeValues));
 	if (new == NULL) {
@@ -26,7 +28,7 @@ int outdegree(Graph g, Vertex v) {
 	if (g->edges[v] != NULL) {
 		int degree = 0;
 		AdjList scan = g->edges[v];
-		for (AdjList scan = g->edges[v]; scan != NULL; scan = scan->next) {
+		for (scan = g->edges[v]; scan != NULL; scan = scan->next) {
 			degree++;
 		}
 		return degree;
@@ -60,7 +62,7 @@ NodeValues outDegreeCentrality(Graph g) {
 	//return a struct with an array of the number of outgoing edges from each vertex
 	NodeValues *outgoing = newCentralityStruct(g->nV);
 	double degree = 0;
-	for (int v = 0; v < g->nV; v++;) {
+	for (int v = 0; v < g->nV; v++) {
 		degree = (double)outdegree(g, v);
 		outgoing->values[v] = degree;
 	}
@@ -71,7 +73,7 @@ NodeValues inDegreeCentrality(Graph g) {
 	//return a struct with an array of the number of incoming edges for each vertex
 	NodeValues *incoming = newCentralityStruct(g->nV);
 	double degree = 0;
-	for (int v = 0; v < g->nV; v++;) {
+	for (int v = 0; v < g->nV; v++) {
 		degree = (double)indegree(g, v);
 		incoming->values[v] = degree;
 	}
@@ -83,12 +85,12 @@ NodeValues degreeCentrality(Graph g) {
 	return outDegreeCentrality(g); //because the outgoing edges are the same as the incoming ones (there's no direction)
 }
 
-void visit_reach(Vertex v, int *neighbours) {
+void visit_reach(Graph g, Vertex v) {
 	//for each unvisited neighbour of v, mark it as visited and call this function on it
 	for (AdjList neighbours = g->edges[v]; neighbours != NULL; neighbours = neighbours->next) {
 		if (visited[neighbours->w] == 0) {
 			visited[neighbours->w] = 1;
-			visit_reach(neighbours->w, &neighbours);
+			visit_reach(g, neighbours->w);
 		}
 	}
 }
@@ -96,7 +98,11 @@ void visit_reach(Vertex v, int *neighbours) {
 int numReach(Graph g, Vertex v) {
 	//depth-first search to count the number of nodes that v can reach
 	int num = 0;
-	int visited[g->nV];
+	visited = malloc(g->nV*sizeof(int)); //initialise the visited array for this instance
+	if (visited == NULL) {
+		fprintf(stderr, "Error!\n");
+		return NULL;
+	}
 	for (int i = 0; i < g->nV; i++) {
 		visited[i] = 0;
 		if (i == v) {
@@ -107,7 +113,7 @@ int numReach(Graph g, Vertex v) {
 	//for each neighbour of v, visit it and then visit its neighbours
 	for (AdjList neighbours = g->edges[v]; neighbours != NULL; neighbours = neighbours->next) {
 		visited[neighbours->w] = 1;
-		visit_reach(neighbours->w, &neighbours);
+		visit_reach(g, neighbours->w);
 	}
 
 	//sum the number of visited nodes

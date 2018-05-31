@@ -1,6 +1,6 @@
-#include "Graph.h"
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include "Graph.h"
 
 struct GraphRep {
 	AdjList *edges; //an array, with an element for each vertex, pointing to a linked list of vertices that have an edge with that vertex
