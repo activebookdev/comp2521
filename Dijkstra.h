@@ -1,11 +1,10 @@
 // Dijkstra ADT interface for Ass2 (COMP2521)
 #include <stdbool.h>
-#ifndef GRAPH
-	#define GRAPH
-	#include "Graph.h"
-#endif
+//#ifndef GRAPH, #define GRAPH, #include "Graph.h", #endif
 
-//include "Graph.h", ifndef _CS2521_DIJKSTRA_H, define _CS2521_DIJKSTRA_H
+#include "Graph.h"
+#ifndef _CS2521_DIJKSTRA_H
+#define _CS2521_DIJKSTRA_H
 
 typedef struct PredNode {
    int         v;
@@ -29,4 +28,4 @@ ShortestPaths dijkstra(Graph, Vertex);
 void  showShortestPaths(ShortestPaths);
 void  freeShortestPaths(ShortestPaths);
 
-//endif
+#endif

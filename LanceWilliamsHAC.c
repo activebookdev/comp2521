@@ -81,6 +81,7 @@ double **combine_clusters_distances(double **distances, int size, int v, int w, 
 	}
 	new_distances[size-2][size-2] = INT_MAX; //this is the bottom-right corner element
 
+	free(distances);
 	return new_distances;
 }
 

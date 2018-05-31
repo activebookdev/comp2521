@@ -1,11 +1,10 @@
 // Graph ADT interface for Ass2 (COMP2521)
 #include <stdbool.h>
-#ifndef GRAPH
-	#define GRAPH
-	#include "Graph.h"
-#endif
+//#ifndef GRAPH, #define GRAPH, #include "Graph.h", #endif
 
-//ifndef _CS2521_CENTRALITY_H, define _CS2521_CENTRALITY_H, include "Graph.h"
+#ifndef _CS2521_CENTRALITY_H
+#define _CS2521_CENTRALITY_H
+#include "Graph.h"
 
 typedef struct NodeValues {
    int noNodes;
@@ -24,4 +23,4 @@ NodeValues betweennessCentralityNormalised(Graph);
 
 void  showNodeValues(NodeValues);
 void  freeNodeValues(NodeValues);
-//endif
+#endif

@@ -6,7 +6,7 @@ struct GraphRep {
 	AdjList *edges; //an array, with an element for each vertex, pointing to a linked list of vertices that have an edge with that vertex
 	int nE;	//the number of edges in the graph
 	int nV; //the number of vertices in the graph
-}
+};
 
 AdjList newListNode(int dest, int weight) {
 	if (weight >= 0) {
@@ -138,11 +138,11 @@ AdjList inIncident(Graph g, Vertex v) {
 						//this edge is incident on v
 						if (new == NULL) {
 							//this is the first such edge
-							new = AdjList(i, scan->weight);
+							new = newListNode(i, scan->weight);
 							newscan = new;
 						} else {
 							//append this to the end of the new list
-							newscan->next = AdjList(i, scan->weight);
+							newscan->next = newListNode(i, scan->weight);
 							newscan = newscan->next;
 						}
 						break;
@@ -164,7 +164,7 @@ void freeGraph(Graph g) {
 	AdjList scan;
 	AdjList delete;
 	for (Vertex i = 0; i < g->nV; i++) {
-		for (scan = g[i]; scan != NULL;) {
+		for (scan = g->edges[i]; scan != NULL;) {
 			delete = scan;
 			scan = scan->next;
 			free(delete);

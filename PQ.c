@@ -78,7 +78,8 @@ void updatePQ(PQ queue, ItemPQ item) {
 }
 
 int PQEmpty(PQ queue) {
-	//TODO
+	if (queue->nitems == 0) return 1;
+	return 0;
 }
 
 void showPQ(PQ queue) {

@@ -1,7 +1,8 @@
 // PQ ADT interface for Ass2 (COMP2521)
 #include <stdbool.h>
 
-//ifndef _CS2521_PQ_H, define _CS2521_PQ_H
+#ifndef _CS2521_PQ_H
+#define _CS2521_PQ_H
 
 typedef struct PQRep *PQ;
 
@@ -36,4 +37,4 @@ int PQEmpty(PQ);
 void  showPQ(PQ);
 void  freePQ(PQ);
 
-//endif
+#endif
