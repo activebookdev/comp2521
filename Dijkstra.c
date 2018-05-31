@@ -51,7 +51,7 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
         fprintf(stderr, "Error!\n");
         exit(EXIT_FAILURE);
     }
-    /*
+
     PQ PathPQ = newPQ(); //the priority queue for inspecting nodes
     AdjList current; //our pointer for scanning through the graph
     int i = 0; //an iterator for looking at vertices
@@ -128,7 +128,6 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
             current = current->next;
         }
     }
-    */
     return *paths;
 
 }
