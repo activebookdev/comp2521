@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "Dijkstra.h"
 #include "CentralityMeasures.h"
 
 int *visited; //will be a global array for the recursive dfs reach function
@@ -131,10 +132,12 @@ NodeValues closenessCentrality(Graph g) {
 	int reach = 0;
 	int dsum = 0;
 	int i = 0;
+	ShortestPaths temp;
 	ShortestPaths *paths;
 	for (int v = 0; v < g->nV; v++) { //for each vertex v, calculate the value of the closeness formula
 		reach = numReach(g, v); //the number of nodes that v can reach (not including itself)
-		paths = &pathsdijkstra(g, v); //the result of dijkstra's algorithm
+		temp = dijkstra(g, v); //the result of dijkstra's algorithm
+		paths = &temp; //this temp is needed because the & operator cannot be placed in front of a function
 		dsum = 0;
 		for (i = 0; i < g->nV; i++) { //sum the shortest path distances for each vertex
 			dsum += paths->dist[i];
@@ -165,10 +168,12 @@ int num_pred_paths(int s, int t, ShortestPaths *paths, int v) {
 
 int betweenness(Graph g, Vertex v) {
 	int betweenness = 0;
+	ShortestPaths temp;
 	ShortestPaths *paths;
 	for (int s = 0; s < g->nV; s++) {
 		if (s != v) {
-			paths = &pathsdijkstra(g, v);
+			temp = dijkstra(g, v);
+			paths = &temp;
 			for (int t = 0; t < g->nV; t++) {
 				if (t != v) {
 					//find the number of shortest paths from s to t that pass through v
@@ -183,7 +188,6 @@ int betweenness(Graph g, Vertex v) {
 NodeValues betweennessCentrality(Graph g) {
 	//return a struct with an array of the number of incoming edges for each vertex
 	NodeValues *centrality = newCentralityStruct(g->nV);
-	double betweenness_score = 0;
 	for (int v = 0; v < g->nV; v++) {
 		centrality->values[v] = (double)betweenness(g, v);
 	}
