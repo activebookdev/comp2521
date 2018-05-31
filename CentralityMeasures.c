@@ -101,7 +101,7 @@ int numReach(Graph g, Vertex v) {
 	visited = malloc(g->nV*sizeof(int)); //initialise the visited array for this instance
 	if (visited == NULL) {
 		fprintf(stderr, "Error!\n");
-		return NULL;
+		return 0;
 	}
 	for (int i = 0; i < g->nV; i++) {
 		visited[i] = 0;
@@ -117,7 +117,7 @@ int numReach(Graph g, Vertex v) {
 	}
 
 	//sum the number of visited nodes
-	for (i = 0; i < g->nV; i++) {
+	for (int i = 0; i < g->nV; i++) {
 		if (visited[i] == 1) {
 			num++;
 		}
@@ -132,11 +132,11 @@ NodeValues closenessCentrality(Graph g) {
 	int dsum = 0;
 	int i = 0;
 	ShortestPaths *paths;
-	for (int v = 0; v < g->nV; v++;) { //for each vertex v, calculate the value of the closeness formula
+	for (int v = 0; v < g->nV; v++) { //for each vertex v, calculate the value of the closeness formula
 		reach = numReach(g, v); //the number of nodes that v can reach (not including itself)
 		paths = &pathsdijkstra(g, v); //the result of dijkstra's algorithm
 		dsum = 0;
-		for (i = 0; i < g->nV; i++;) { //sum the shortest path distances for each vertex
+		for (i = 0; i < g->nV; i++) { //sum the shortest path distances for each vertex
 			dsum += paths->dist[i];
 		}
 		closeness = (double)(reach-1)*(reach-1)/((g->nV-1)*dsum);
@@ -183,22 +183,20 @@ int betweenness(Graph g, Vertex v) {
 NodeValues betweennessCentrality(Graph g) {
 	//return a struct with an array of the number of incoming edges for each vertex
 	NodeValues *centrality = newCentralityStruct(g->nV);
-	double betweenness = 0;
-	for (int v = 0; v < g->nV; v++;) {
-		betweenness = (double)betweenness(g, v);
-		centrality->values[v] = betweenness;
+	double betweenness_score = 0;
+	for (int v = 0; v < g->nV; v++) {
+		centrality->values[v] = (double)betweenness(g, v);
 	}
 	return *centrality;
 }
 
 NodeValues betweennessCentralityNormalised(Graph g) {
 	//return a normalised version of the betweenness centrality struct
-	NodeValues *centrality = betweennessCentrality(g);
-	double betweenness = 0;
-	for (int v = 0; v < g->nV; v++;) {
-		centrality->values[v] = (centrality->values[v])/((g->nV-1)*(g->nV-2));
+	NodeValues centrality = betweennessCentrality(g);
+	for (int v = 0; v < g->nV; v++) {
+		centrality.values[v] = (centrality.values[v])/((g->nV-1)*(g->nV-2));
 	}
-	return *centrality;
+	return centrality;
 }
 
 void  showNodeValues(NodeValues v) {
@@ -207,6 +205,6 @@ void  showNodeValues(NodeValues v) {
 
 void  freeNodeValues(NodeValues v) {
 	NodeValues *delete = &v;
-	free(delete->values)
+	free(delete->values);
 	free(delete);
 }
