@@ -101,8 +101,6 @@ bool adjacent(Graph g, Vertex src, Vertex dest) {
 		}
 	}
 	return false;
-
-	//TODO: CHECK IF WE NEED TO CONSIDER BOTH DIRECTIONS
 }
 
 int numVerticies(Graph g) {
@@ -147,7 +145,7 @@ AdjList inIncident(Graph g, Vertex v) {
 							newscan->next = AdjList(i, scan->weight);
 							newscan = newscan->next;
 						}
-						//break here if two vertices CANNOT have multiple edges between them
+						break;
 					}
 				}
 			}
