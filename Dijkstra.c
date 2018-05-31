@@ -40,7 +40,7 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
             dist[i] = 0;
         }
         else {
-             temp->value = i;//this doesnt really matter
+             temp->value = INT_MAX;//this doesnt really matter
              dist[i] = INT_MAX;
         }
         temp->key = i;
