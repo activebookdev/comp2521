@@ -87,7 +87,7 @@ void addPQ(PQ queue, ItemPQ item) {
 					//we have a key match, so just update
 					match = 1;
 					insert = 0;
-					if ((queue->num_items == 1) || (i == 0 && item.value <= queue->items[1]->value) || (item.value >= queue->items[i-1]->value && item.value <= queue->items[i+1]->value) || (i == queue->num_items-1 && item.value >= queue->items[i-1]->value)) {
+					if ((queue->num_items == 1) || (i == 0 && item.value <= queue->items[1]->value) || (i == queue->num_items-1 && item.value >= queue->items[i-1]->value) || (item.value >= queue->items[i-1]->value && item.value <= queue->items[i+1]->value)) {
 						//don't shift because the value change holds its position
 						scan->value = item.value;
 					} else if (item.value < scan->value) {
@@ -128,6 +128,7 @@ void addPQ(PQ queue, ItemPQ item) {
 							queue->items[queue->num_items-1] = scan;
 						}
 					}
+					break;
 				}
 				i++;
 			}
@@ -201,7 +202,7 @@ void updatePQ(PQ queue, ItemPQ item) {
 				if (scan->key == item.key) {
 					//we have a key match, so just update
 					insert = 0;
-					if ((queue->num_items == 1) || (i == 0 && item.value <= queue->items[1]->value) || (item.value >= queue->items[i-1]->value && item.value <= queue->items[i+1]->value) || (i == queue->num_items-1 && item.value >= queue->items[i-1]->value)) {
+					if ((queue->num_items == 1) || (i == 0 && item.value <= queue->items[1]->value) || (i == queue->num_items-1 && item.value >= queue->items[i-1]->value) || (item.value >= queue->items[i-1]->value && item.value <= queue->items[i+1]->value)) {
 						//don't shift because the value change holds its position
 						scan->value = item.value;
 					} else if (item.value < scan->value) {
@@ -242,6 +243,7 @@ void updatePQ(PQ queue, ItemPQ item) {
 							queue->items[queue->num_items-1] = scan;
 						}
 					}
+					break;
 				}
 				i++;
 			}
