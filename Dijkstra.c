@@ -34,11 +34,12 @@ void freepredecessor(PredNode *delete) {
 
 ShortestPaths dijkstra(Graph g, Vertex v) {
     ShortestPaths *paths; //the struct holding the shortest paths info
-    paths = malloc (sizeof (struct ShortestPaths));
+    paths = malloc (sizeof(struct ShortestPaths));
     if (paths == NULL) {
         fprintf(stderr, "Error!\n");
 		exit(EXIT_FAILURE);
     }
+    printf("created paths pointer\n");
     paths->noNodes = numVerticies(g);
     paths->src = v;
     paths->dist = malloc(paths->noNodes*sizeof(int));
@@ -46,12 +47,13 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
         fprintf(stderr, "Error!\n");
         exit(EXIT_FAILURE);
     }
+    printf("created paths dist\n");
     paths->pred = malloc(paths->noNodes*sizeof(PredNode *));
     if (paths->pred == NULL) {
         fprintf(stderr, "Error!\n");
         exit(EXIT_FAILURE);
     }
-
+    printf("created paths pred array\n");
     PQ PathPQ = newPQ(); //the priority queue for inspecting nodes
     AdjList current; //our pointer for scanning through the graph
     int i = 0; //an iterator for looking at vertices
@@ -65,7 +67,7 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
     PredNode *scan; //for scanning through the predecessor list of a vertex
     PredNode *delete; //used for clearing nodes from predecessor lists
     int append = 0;
-
+    printf("initialised variables\n");
     while (i < numVerticies(g)) {
         if (i == v) { //this is the src node
             temp = newPQnode(i, 0);
@@ -78,6 +80,7 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
         addPQ(PathPQ, *temp);
         i++;
     }
+    printf("fills distance array\n");
 
     //at this point, our priority queue has all vertices in the graph g, and will grab vertex v first
 
@@ -102,7 +105,7 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
                     paths->pred[neighbour] = predecessor;
                 } else {
                     //clear the entire pred list, then add the new predecessor
-                    scan = paths->pred[neighbour];
+                    scan = paths->pred[neighbour]; //TODO FIX seg faults here
                     while (scan != NULL) {
                         delete = scan;
                         scan = scan->next;
