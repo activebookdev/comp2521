@@ -31,6 +31,19 @@ int *closest_clusters(double **distances, int size) {
 	return clusters;
 }
 
+double LWcalculate(double i, double j, int method) {
+	//given dist(ci, ck) and dist(cj, ck), and the LW method, calculate the result
+	if (method == 1) {
+		//Single-Link method
+		if (i < j) return i;
+		return j;
+	} else {
+		//Complete-Link method
+		if (i > j) return i;
+		return j
+	}
+}
+
 double **combine_clusters_distances(double **distances, int size, int v, int w, int method) {
 	//return a (size-1)*(size-1) array of distances, modified to combine clusters at indexes v and w, using method specified
 	double **new_distances = malloc((size-1)*(size-1)*sizeof(double));
@@ -40,10 +53,33 @@ double **combine_clusters_distances(double **distances, int size, int v, int w, 
 	}
 
 	//copy all but the vth and wth rows, and vth and wth columns
+	int ir = 0, ic = 0, jr = 0, jc = 0;
+	for (ir = 0; ir < size; ir++) {
+		if (ir != v && ir != w) {
+			for (ic = 0; ic < size; ic++) {
+				if (ic != v && ic != w) {
+					new_distances[jr][jc] = distances[ir][ic];
+					jc++; //only increment if we copied across this element
+				}
+			}
+			jr++; //only increment if we copied across this row
+		}
+	}
 
+	//now we need to append the final vw row to new_distances, using the method specified
+	int j = 0;
+	for (int i = 0; i < size; i++) {
+		if (i != v && i != w) {
+			new_distances[size-2][j] = LWcalculate(distances[v][i], distances[w][i], method);
+			j++;
+		}
+	}
 
-
-
+	//now copy this final row to the final column
+	for (i = 0; i < size-2; i++) {
+		new_distances[i][size-2] = new_distances[size-2][i];
+	}
+	new_distances[size-2][size-2] = INT_MAX; //this is the bottom-right corner element
 
 	return new_distances;
 }
