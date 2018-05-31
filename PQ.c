@@ -39,21 +39,23 @@ PQ newPQ() {
 
 void shift(PQ queue, int start, int direction) {
 	//starting at element queue->items[start], shift all elements above/below (depending on direction, including start) in the direction provided (0=up, 1=down)
-	int i = start; //counting the items we're shifting
+	int i; //counting the items we're shifting
 	if (direction == 0) {
 		//shift up, assuming the element above start is not important
+		i = start;
 		while (i < queue->num_items) {
 			queue->items[i-1] = queue->items[i]; //perform the shift
 			i++;
 		}
 		queue->items[queue->num_items-1] = NULL; //to clean the array
 	} else if (direction == 1) {
-		//shift down, assuming the element below start is not important
-		while (i >= 0) {
+		//shift down
+		i = queue->num_items-2; //start at the second last element of the array because the last element will be null
+		while (i >= start) {
 			queue->items[i+1] = queue->items[i]; //perform the shift
 			i--;
 		}
-		queue->items[0] = NULL; //to clean the array
+		queue->items[start] = NULL; //to clean the array
 	}
 }
 
@@ -104,7 +106,7 @@ void addPQ(PQ queue, ItemPQ item) {
 						}
 						if (insert == 0) {
 							//insert at the top
-							shift(queue, 0, 1);
+							shift(queue, 0, 1); //start at the top of the list and pull everything down
 							queue->items[0] = scan;
 						}
 					} else if (item.value > scan->value) {
@@ -145,18 +147,20 @@ void addPQ(PQ queue, ItemPQ item) {
 					i = 0;
 					while (i < queue->num_items) {
 						if (queue->items[i]->value > item.value) { //not >= because we want to preserve FIFO order for equivalent value items
-							//insert in the items slot of i-1
+							//insert in the items slot of i (above the current item in i which will be shifted down)
+							queue->num_items++;
 							shift(queue, i, 1);
 							queue->items[i] = copy;
 							insert = 1;
+							break;
 						}
 						i++;
 					}
 					if (insert == 0) {
 						//we need to insert the new item at the end of the array
 						queue->items[queue->num_items] = copy;
+						queue->num_items++;
 					}
-					queue->num_items++;
 				}
 			}
 		} else {
@@ -197,7 +201,10 @@ void updatePQ(PQ queue, ItemPQ item) {
 				if (scan->key == item.key) {
 					//we have a key match, so just update
 					insert = 0;
-					if (item.value < scan->value) {
+					if (item.value >= queue->items[i-1]->value && item.value <= queue->items[i+1]->value) {
+						//don't shift because the value change holds its position
+						scan->value = item.value;
+					} else if (item.value < scan->value) {
 						//we need to update and move scan up the array
 						scan->value = item.value;
 						shift(queue, i+1, 0); //remove scan from the array of items for now
@@ -213,7 +220,7 @@ void updatePQ(PQ queue, ItemPQ item) {
 						}
 						if (insert == 0) {
 							//insert at the top
-							shift(queue, 0, 1);
+							shift(queue, 0, 1); //start at the top of the list and pull everything down
 							queue->items[0] = scan;
 						}
 					} else if (item.value > scan->value) {

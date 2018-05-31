@@ -19,14 +19,16 @@ int main(){
 	item.key = 2;
 	item.value = 24;
 	addPQ(new, item); //adds item
+	showPQ(new);
 	item.key = 1;
 	item.value = 3;
 	addPQ(new, item); //updates item 1's value
 	showPQ(new);
+	item.key = 0;
+	item.value = 30;
+	updatePQ(new, item); //update item 0's value
+	showPQ(new);
 	/*
-	item = newPQnode(2, 3); //updates item 2's value
-	ItemPQ temp = *item;
-	updatePQ(new, temp);
 	item = newPQnode(4, 100); //do nothing
 	temp = *item;
 	updatePQ(new, temp);
