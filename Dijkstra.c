@@ -18,14 +18,14 @@ ItemPQ *newPQnode(int key, int value) {
 }
 
 PredNode *newpredecessor(int v) {
-    PredNode new = malloc(sizeof(PredNode));
+    PredNode *new = malloc(sizeof(PredNode));
     if (new == NULL) {
         fprintf(stderr, "Error!\n");
         return NULL;
     }
     new->v = v;
     new->next = NULL;
-    return *new;
+    return new;
 }
 
 void freepredecessor(PredNode *delete) {
@@ -37,24 +37,25 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
     paths = malloc (sizeof (struct ShortestPaths));
     if (paths == NULL) {
         fprintf(stderr, "Error!\n");
-		return NULL;
+		exit(EXIT_FAILURE);
     }
-    paths->noNodes = g->nV;
+    paths->noNodes = numVerticies(g);
     paths->src = v;
     paths->dist = malloc(paths->noNodes*sizeof(int));
     if (paths->dist == NULL) {
         fprintf(stderr, "Error!\n");
-        return NULL;
+        exit(EXIT_FAILURE);
     }
     paths->pred = malloc(paths->noNodes*sizeof(PredNode *));
     if (paths->pred == NULL) {
         fprintf(stderr, "Error!\n");
-        return NULL;
+        exit(EXIT_FAILURE);
     }
     
     PQ PathPQ = newPQ(); //the priority queue for inspecting nodes
     AdjList current; //our pointer for scanning through the graph
     int i = 0; //an iterator for looking at vertices
+    ItemPQ tmp; //used to ger dijkstra result then & operator is applied
     ItemPQ *temp; //queue objects for interacting with our priority queue
     ItemPQ *save;
     int new_dist; //an integer to hold distances for comparison
@@ -65,7 +66,7 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
     PredNode *delete; //used for clearing nodes from predecessor lists
     int append = 0;
 
-    while (i < g->nV) {
+    while (i < numVerticies(g)) {
         if (i == v) { //this is the src node
             temp = newPQnode(i, 0);
             paths->dist[i] = 0;
@@ -81,9 +82,10 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
     //at this point, our priority queue has all vertices in the graph g, and will grab vertex v first
 
     while (!PQEmpty(PathPQ)) {
-        temp = &dequeuePQ(PathPQ); //get the vertex with the smallest distance
+        tmp = dequeuePQ(PathPQ); //get the vertex with the smallest distance
+        temp = &tmp;
         current_vertex = temp->key;
-        current = g->edges[current_vertex]; //the list of all vertices pointed to by our current node (outgoing edges)
+        current = outIncident(g, current_vertex); //the list of all vertices pointed to by our current node (outgoing edges)
         while (current != NULL) {
             neighbour = current->w;
             new_dist = paths->dist[current_vertex] + current->weight;

@@ -3,11 +3,18 @@
 #include <math.h>
 #include "PQ.h"
 
+typedef struct _ItemPQnode {
+	ItemPQ *item;
+	struct _ItemPQnode *next;
+} *ItemPQnode;
+
 struct PQRep {
 	int nitems;
-	ItemPQ *front;
-	ItemPQ *back;
-}
+	ItemPQnode front;
+	ItemPQnode back;
+};
+
+//since ItemPQ doesn't have a next field, it needs to be put into a wrapping struct ItemPQnode with a next field in order to use it with the queue
 
 PQ newPQ() {
 	PQ new;
@@ -21,58 +28,66 @@ PQ newPQ() {
 	return new;
 }
 
+ItemPQnode wrap_item(ItemPQ *item) {
+	ItemPQnode new = malloc(sizeof(struct _ItemPQnode));
+	if (new == NULL) {
+		fprintf(stderr, "Error!\n");
+		return NULL;
+	}
+	new->item = item;
+	new->next = NULL;
+	return new;
+}
+
 void addPQ(PQ queue, ItemPQ item) {
 	//scan the queue for a node with the same key as 'item', if one exists, update its value, otherwise insert onto the back of the queue
-	if (item != NULL) {
-		for (ItemPQ *scan = queue->front; scan != NULL; scan = scan->next) {
-			if (scan->key == item->key) {
-				scan->value = item->value;
-				return;
-			}
+	ItemPQnode node = wrap_item(&item);
+	for (ItemPQnode scan = queue->front; scan != NULL; scan = scan->next) {
+		if (scan->item->key == item.key) {
+			scan->item->value = item.value;
+			return;
 		}
+	}
 
-		if (queue->back != NULL) {
-			queue->back->next = item;
-			item->next = NULL;
-			queue->nitems++;
-		} else {
-			//queue is empty
-			queue->front = item;
-			queue->back = item;
-			item->next = NULL;
-			queue->nitems = 1;
-		}
+	if (queue->back != NULL) {
+		queue->back->next = node;
+		node->next = NULL;
+		queue->nitems++;
+	} else {
+		//queue is empty
+		queue->front = node;
+		queue->back = node;
+		node->next = NULL;
+		queue->nitems = 1;
 	}
 }
 
-//TODO: ASK LECTURER IF ItemPQ IS MEANT TO BE THE TYPEDEF OF POINTER, NOT STRUCT ITSELF
 ItemPQ dequeuePQ(PQ queue) {
 	/* Removes and returns the item (ItemPQ) with smallest 'value'.
 	   For items with equal 'value', observes FIFO.
 	   Returns null if this queue is empty.
 	*/
 	if (queue != NULL && queue->nitems > 0) {
-		ItemPQ *smallest = queue->front;
-		for (ItemPQ *item = queue->front->next; item != NULL; item = item->next) {
-			if (item->value < smallest->value) { //not <= to observe FIFO
-				smallest = item;
+		ItemPQnode smallest = queue->front;
+		for (ItemPQnode node = queue->front->next; node != NULL; node = node->next) {
+			if (node->item->value < smallest->item->value) { //not <= to observe FIFO
+				smallest = node;
 			}
 		}
-		return *smallest;
+		return *smallest->item;
 	}
-	return NULL;
+	fprintf(stderr, "Error!\n");
+	exit(EXIT_FAILURE);
 }
 
 void updatePQ(PQ queue, ItemPQ item) {
 	/* Updates item with a given 'key' value, by updating that item's value to the given 'value'.
 	   If item with 'key' does not exist in the queue, no action is taken
 	*/
-	if (item != NULL) {
-		for (ItemPQ *scan = queue->front; scan != NULL; scan = scan->next) {
-			if (scan->key == item->key) {
-				scan->value = item->value;
-				return;
-			}
+	for (ItemPQnode scan = queue->front; scan != NULL; scan = scan->next) {
+		if (scan->item->key == item.key) {
+			scan->item->value = item.value;
+			return;
 		}
 	}
 }
@@ -88,10 +103,11 @@ void showPQ(PQ queue) {
 
 void freePQ(PQ queue) {
 	if (queue != NULL) {
-		ItemPQ *delete;
-		for (ItemPQ *scan = queue->front; scan != NULL; scan = scan->next) {
+		ItemPQnode delete;
+		for (ItemPQnode scan = queue->front; scan != NULL; scan = scan->next) {
 			delete = scan;
 			scan = scan->next;
+			free(delete->item);
 			free(delete);
 		}
 		free(queue);

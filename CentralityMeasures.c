@@ -26,15 +26,11 @@ NodeValues *newCentralityStruct(int num_nodes) {
 //this function will be used instead of the Graph ADT's outIncident function, for the sake of efficiency
 int outdegree(Graph g, Vertex v) {
 	//returns the number of adjacent vertices on outgoing edges from v
-	if (g->edges[v] != NULL) {
-		int degree = 0;
-		AdjList scan = g->edges[v];
-		for (scan = g->edges[v]; scan != NULL; scan = scan->next) {
-			degree++;
-		}
-		return degree;
+	int degree = 0;
+	for (AdjList scan = outIncident(g, v); scan != NULL; scan = scan->next) {
+		degree++;
 	}
-	return 0;
+	return degree;
 }
 
 //again, this function will be used instead of the Graph ADT's inIncident function
@@ -42,11 +38,11 @@ int indegree(Graph g, Vertex v) {
 	//returns the number of adjacent vertices on incoming edges to v
 	AdjList scan;
 	int degree = 0;
-	if (g->nE > 0) {
-		for (Vertex i = 0; i < g->nV; i++) {
+	if (numVerticies(g) > 0) {
+		for (Vertex i = 0; i < numVerticies(g); i++) {
 			if (i != v) {
 				//inspect g->edges[i] for any edges incident on v
-				for (scan = g->edges[i]; scan != NULL; scan = scan->next) {
+				for (scan = outIncident(g, i); scan != NULL; scan = scan->next) {
 					if (scan->w == v) {
 						//this edge is incident on v
 						degree++;
@@ -61,9 +57,9 @@ int indegree(Graph g, Vertex v) {
 
 NodeValues outDegreeCentrality(Graph g) {
 	//return a struct with an array of the number of outgoing edges from each vertex
-	NodeValues *outgoing = newCentralityStruct(g->nV);
+	NodeValues *outgoing = newCentralityStruct(numVerticies(g));
 	double degree = 0;
-	for (int v = 0; v < g->nV; v++) {
+	for (int v = 0; v < numVerticies(g); v++) {
 		degree = (double)outdegree(g, v);
 		outgoing->values[v] = degree;
 	}
@@ -72,9 +68,9 @@ NodeValues outDegreeCentrality(Graph g) {
 
 NodeValues inDegreeCentrality(Graph g) {
 	//return a struct with an array of the number of incoming edges for each vertex
-	NodeValues *incoming = newCentralityStruct(g->nV);
+	NodeValues *incoming = newCentralityStruct(numVerticies(g));
 	double degree = 0;
-	for (int v = 0; v < g->nV; v++) {
+	for (int v = 0; v < numVerticies(g); v++) {
 		degree = (double)indegree(g, v);
 		incoming->values[v] = degree;
 	}
@@ -88,7 +84,7 @@ NodeValues degreeCentrality(Graph g) {
 
 void visit_reach(Graph g, Vertex v) {
 	//for each unvisited neighbour of v, mark it as visited and call this function on it
-	for (AdjList neighbours = g->edges[v]; neighbours != NULL; neighbours = neighbours->next) {
+	for (AdjList neighbours = outIncident(g, v); neighbours != NULL; neighbours = neighbours->next) {
 		if (visited[neighbours->w] == 0) {
 			visited[neighbours->w] = 1;
 			visit_reach(g, neighbours->w);
@@ -99,12 +95,12 @@ void visit_reach(Graph g, Vertex v) {
 int numReach(Graph g, Vertex v) {
 	//depth-first search to count the number of nodes that v can reach
 	int num = 0;
-	visited = malloc(g->nV*sizeof(int)); //initialise the visited array for this instance
+	visited = malloc(numVerticies(g)*sizeof(int)); //initialise the visited array for this instance
 	if (visited == NULL) {
 		fprintf(stderr, "Error!\n");
 		return 0;
 	}
-	for (int i = 0; i < g->nV; i++) {
+	for (int i = 0; i < numVerticies(g); i++) {
 		visited[i] = 0;
 		if (i == v) {
 			visited[i] = 1;
@@ -112,13 +108,13 @@ int numReach(Graph g, Vertex v) {
 	}
 
 	//for each neighbour of v, visit it and then visit its neighbours
-	for (AdjList neighbours = g->edges[v]; neighbours != NULL; neighbours = neighbours->next) {
+	for (AdjList neighbours = outIncident(g, v); neighbours != NULL; neighbours = neighbours->next) {
 		visited[neighbours->w] = 1;
 		visit_reach(g, neighbours->w);
 	}
 
 	//sum the number of visited nodes
-	for (int i = 0; i < g->nV; i++) {
+	for (int i = 0; i < numVerticies(g); i++) {
 		if (visited[i] == 1) {
 			num++;
 		}
@@ -127,22 +123,22 @@ int numReach(Graph g, Vertex v) {
 }
 
 NodeValues closenessCentrality(Graph g) {
-	NodeValues *centrality = newCentralityStruct(g->nV);
+	NodeValues *centrality = newCentralityStruct(numVerticies(g));
 	double closeness = 0;
 	int reach = 0;
 	int dsum = 0;
 	int i = 0;
 	ShortestPaths temp;
 	ShortestPaths *paths;
-	for (int v = 0; v < g->nV; v++) { //for each vertex v, calculate the value of the closeness formula
+	for (int v = 0; v < numVerticies(g); v++) { //for each vertex v, calculate the value of the closeness formula
 		reach = numReach(g, v); //the number of nodes that v can reach (not including itself)
 		temp = dijkstra(g, v); //the result of dijkstra's algorithm
 		paths = &temp; //this temp is needed because the & operator cannot be placed in front of a function
 		dsum = 0;
-		for (i = 0; i < g->nV; i++) { //sum the shortest path distances for each vertex
+		for (i = 0; i < numVerticies(g); i++) { //sum the shortest path distances for each vertex
 			dsum += paths->dist[i];
 		}
-		closeness = (double)(reach-1)*(reach-1)/((g->nV-1)*dsum);
+		closeness = (double)(reach-1)*(reach-1)/((numVerticies(g)-1)*dsum);
 		centrality->values[v] = closeness;
 	}
 	return *centrality;
@@ -170,11 +166,11 @@ int betweenness(Graph g, Vertex v) {
 	int betweenness = 0;
 	ShortestPaths temp;
 	ShortestPaths *paths;
-	for (int s = 0; s < g->nV; s++) {
+	for (int s = 0; s < numVerticies(g); s++) {
 		if (s != v) {
 			temp = dijkstra(g, v);
 			paths = &temp;
-			for (int t = 0; t < g->nV; t++) {
+			for (int t = 0; t < numVerticies(g); t++) {
 				if (t != v) {
 					//find the number of shortest paths from s to t that pass through v
 					betweenness += num_pred_paths(s, t, paths, v);
@@ -187,8 +183,8 @@ int betweenness(Graph g, Vertex v) {
 
 NodeValues betweennessCentrality(Graph g) {
 	//return a struct with an array of the number of incoming edges for each vertex
-	NodeValues *centrality = newCentralityStruct(g->nV);
-	for (int v = 0; v < g->nV; v++) {
+	NodeValues *centrality = newCentralityStruct(numVerticies(g));
+	for (int v = 0; v < numVerticies(g); v++) {
 		centrality->values[v] = (double)betweenness(g, v);
 	}
 	return *centrality;
@@ -197,8 +193,8 @@ NodeValues betweennessCentrality(Graph g) {
 NodeValues betweennessCentralityNormalised(Graph g) {
 	//return a normalised version of the betweenness centrality struct
 	NodeValues centrality = betweennessCentrality(g);
-	for (int v = 0; v < g->nV; v++) {
-		centrality.values[v] = (centrality.values[v])/((g->nV-1)*(g->nV-2));
+	for (int v = 0; v < numVerticies(g); v++) {
+		centrality.values[v] = (centrality.values[v])/((numVerticies(g)-1)*(numVerticies(g)-2));
 	}
 	return centrality;
 }

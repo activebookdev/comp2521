@@ -23,7 +23,6 @@ void  removeEdge(Graph g, Vertex src, Vertex dest);
 bool  adjacent(Graph g, Vertex src, Vertex dest);
 int  numVerticies(Graph g);
 
-
 /*
  * Returns a list of adjacent vertices
  * on outgoing edges from a given vertex.
