@@ -52,6 +52,7 @@ void addPQ(PQ queue, ItemPQ item) {
 	if (queue->back != NULL) {
 		queue->back->next = node;
 		node->next = NULL;
+		queue->back = node;
 		queue->nitems++;
 	} else {
 		//queue is empty
@@ -84,8 +85,11 @@ void updatePQ(PQ queue, ItemPQ item) {
 	/* Updates item with a given 'key' value, by updating that item's value to the given 'value'.
 	   If item with 'key' does not exist in the queue, no action is taken
 	*/
+	printf("updating\n");
 	for (ItemPQnode scan = queue->front; scan != NULL; scan = scan->next) {
+		printf("compare %d,%d against %d,%d\n", scan->item->key, scan->item->value, item.key, item.value);
 		if (scan->item->key == item.key) {
+			printf("match at %d, %d\n", item.key, item.value);
 			scan->item->value = item.value;
 			return;
 		}
@@ -98,7 +102,14 @@ int PQEmpty(PQ queue) {
 }
 
 void showPQ(PQ queue) {
-	//TODO
+	//print the queue
+	if (queue != NULL) {
+		ItemPQnode scan = queue->front;
+		while (scan != NULL) {
+			printf("key: %d value: %d\n", scan->item->key, scan->item->value);
+			scan = scan->next;
+		}
+	}
 }
 
 void freePQ(PQ queue) {

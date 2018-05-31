@@ -9,18 +9,15 @@ struct GraphRep {
 };
 
 AdjList newListNode(int dest, int weight) {
-	if (weight >= 0) {
-		AdjList new;
-		if ((new = malloc(sizeof(struct _adjListNode))) == NULL) { //malloc memory space for the new node, but return an error if there's a problem
-			fprintf(stderr, "Error!\n");
-			return NULL;
-		}
-		new->w = dest;
-		new->weight = weight;
-		new->next = NULL;
-		return new;
+	AdjList new;
+	if ((new = malloc(sizeof(struct _adjListNode))) == NULL) { //malloc memory space for the new node, but return an error if there's a problem
+		fprintf(stderr, "Error!\n");
+		return NULL;
 	}
-	return NULL;
+	new->w = dest;
+	new->weight = weight;
+	new->next = NULL;
+	return new;
 }
 
 Graph newGraph(int noNodes) {
@@ -108,7 +105,7 @@ int numVerticies(Graph g) {
 }
 
 AdjList outIncident(Graph g, Vertex v) {
-	//returns a list of adjacent vertices on outgoing edges from v
+	//returns a list of adjacent vertices on outgoing edges from v (makes a copy of the vertices so editing this list wont edit the graph g)
 	AdjList original = g->edges[v];
 	if (original != NULL) {
 		AdjList new = newListNode(original->w, original->weight);
@@ -121,7 +118,6 @@ AdjList outIncident(Graph g, Vertex v) {
 		return new;
 	}
 	return NULL;
-	//TODO: CHECK IF return g->edges[v]; IS ACCEPTABLE, OR SHOULD WE DUPLICATE THE LIST AND RETURN THE NEW ONE?
 }
 
 AdjList inIncident(Graph g, Vertex v) {
