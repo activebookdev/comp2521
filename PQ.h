@@ -1,6 +1,5 @@
 // PQ ADT interface for Ass2 (COMP2521)
 #include <stdbool.h>
-
 #ifndef _CS2521_PQ_H
 #define _CS2521_PQ_H
 
@@ -23,7 +22,6 @@ void  addPQ(PQ, ItemPQ);
 
 /* Removes and returns the item (ItemPQ) with smallest 'value'.
    For items with equal 'value', observes FIFO.
-   Returns null if this queue is empty.
 */
 ItemPQ  dequeuePQ(PQ);
 
