@@ -1,126 +1,264 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 #include "PQ.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+#include <math.h>
 
-typedef struct _ItemPQnode {
-	ItemPQ *item;
-	struct _ItemPQnode *next;
-} *ItemPQnode;
+/*
+typedef struct ItemPQ {
+   int         key;
+   int         value;
+} ItemPQ;
+*/
 
 struct PQRep {
-	int nitems;
-	ItemPQnode front;
-	ItemPQnode back;
+	ItemPQ **items; //an array of pointers to items, ordered primarily by value, then by entry order for same value
+	int num_items; //the actual number of items in our queue
+	int arr_size; //the physical size of the array (the number of items that COULD fit)
 };
 
-//since ItemPQ doesn't have a next field, it needs to be put into a wrapping struct ItemPQnode with a next field in order to use it with the queue
-
 PQ newPQ() {
-	PQ new;
-	if ((new = malloc(sizeof(struct PQRep))) == NULL) {
-		fprintf(stderr, "Error!\n");
-		return NULL;
-	}
-	new->nitems = 0;
-	new->front = NULL;
-	new->back = NULL;
-	return new;
-}
-
-ItemPQnode wrap_item(ItemPQ *item) {
-	ItemPQnode new = malloc(sizeof(struct _ItemPQnode));
+	//create a new priority queue
+	PQ new = malloc(sizeof(struct PQRep));
 	if (new == NULL) {
 		fprintf(stderr, "Error!\n");
 		return NULL;
 	}
-	new->item = item;
-	new->next = NULL;
+
+	new->items = malloc(sizeof(ItemPQ)); //initialise the items array to fit 1 item only
+	if (new->items == NULL) {
+		fprintf(stderr, "Error!\n");
+		return NULL;
+	}
+
+	new->num_items = 0; //queue is empty
+	new->arr_size = 1; // we just initialised the arr to size 1
+
 	return new;
 }
 
-void addPQ(PQ queue, ItemPQ item) {
-	//scan the queue for a node with the same key as 'item', if one exists, update its value, otherwise insert onto the back of the queue
-	ItemPQnode node = wrap_item(&item);
-	for (ItemPQnode scan = queue->front; scan != NULL; scan = scan->next) {
-		if (scan->item->key == item.key) {
-			scan->item->value = item.value;
-			return;
+void shift(PQ queue, int start, int direction) {
+	//starting at element queue->items[start], shift all elements above/below (depending on direction, including start) in the direction provided (0=up, 1=down)
+	int i = start; //counting the items we're shifting
+	if (direction == 0) {
+		//shift up, assuming the element above start is not important
+		while (i < queue->num_items) {
+			queue->items[i-1] = queue->items[i]; //perform the shift
+			i++;
 		}
+		queue->items[queue->num_items-1] = NULL; //to clean the array
+	} else if (direction == 1) {
+		//shift down, assuming the element below start is not important
+		while (i >= 0) {
+			queue->items[i+1] = queue->items[i]; //perform the shift
+			i--;
+		}
+		queue->items[0] = NULL; //to clean the array
 	}
+}
 
-	if (queue->back != NULL) {
-		queue->back->next = node;
-		node->next = NULL;
-		queue->back = node;
-		queue->nitems++;
-	} else {
-		//queue is empty
-		queue->front = node;
-		queue->back = node;
-		node->next = NULL;
-		queue->nitems = 1;
+ItemPQ *duplicate(ItemPQ item) {
+	//make a copy of item, and return the address of that copy
+	ItemPQ *copy = malloc(sizeof(ItemPQ));
+	if (copy == NULL) {
+		fprintf(stderr, "Error!\n");
+		return NULL;
+	}
+	copy->key = item.key;
+	copy->value = item.value;
+	return copy;
+}
+
+void addPQ(PQ queue, ItemPQ item) {
+	//add a duplicate of item to the array, ordered by value, unless its key is already present (in that case, update value and shift position accordingly)
+	if (queue != NULL) {
+		if (queue->num_items > 0) {
+			//first, scan the queue for a match
+			int i = 0;
+			ItemPQ *scan;
+			int j = 0;
+			int match = 0;
+			int insert = 0;
+			while (i < queue->num_items) {
+				scan = queue->items[i]; //this will hold onto our shifting node
+				if (scan->key == item.key) {
+					//we have a key match, so just update
+					match = 1;
+					insert = 0;
+					if (item.value >= queue->items[i-1]->value && item.value <= queue->items[i+1]->value) {
+						//don't shift because the value change holds its position
+						scan->value = item.value;
+					} else if (item.value < scan->value) {
+						//we need to update and move scan up the array
+						scan->value = item.value;
+						shift(queue, i+1, 0); //remove scan from the array of items for now
+						j = i-1;
+						while (j >= 0) {
+							if (queue->items[j]->value <= scan->value) {
+								//we have found our insert position
+								shift(queue, j+1, 1); //make room for scan's insertion
+								queue->items[j+1] = scan; //insert scan in the correct, freed space
+								insert = 1;
+							}
+							j--;
+						}
+						if (insert == 0) {
+							//insert at the top
+							shift(queue, 0, 1);
+							queue->items[0] = scan;
+						}
+					} else if (item.value > scan->value) {
+						//we need to update and move scan down the array
+						scan->value = item.value;
+						shift(queue, i+1, 0); //remove scan from the array of items for now
+						j = i+1;
+						while (j < queue->num_items-1) { //-1 since we removed scan
+							if (queue->items[j]->value >= scan->value) {
+								//we have found our insert position
+								shift(queue, j-1, 0); //make room for scan's insertion
+								queue->items[j-1] = scan; //insert scan in the correct, freed space
+								insert = 1;
+							}
+							j++;
+						}
+						if (insert == 0) {
+							//insert at the bottom
+							queue->items[queue->num_items-1] = scan;
+						}
+					}
+				}
+				i++;
+			}
+
+			if (match == 0) {
+				//the item does not exist in the queue yet, so we need to insert it into the correct place
+				//duplicate item, to prevent meddling with the queue by user outside ADT
+				ItemPQ *copy = duplicate(item);
+				if (copy != NULL) {
+					if (queue->arr_size == queue->num_items) {
+						//we need to expand the array
+						int size = queue->num_items;
+						queue->items = (ItemPQ **)realloc(queue->items, (size+1)*sizeof(ItemPQ));
+						queue->arr_size++;
+					}
+					insert = 0;
+					i = 0;
+					while (i < queue->num_items) {
+						if (queue->items[i]->value > item.value) { //not >= because we want to preserve FIFO order for equivalent value items
+							//insert in the items slot of i-1
+							shift(queue, i, 1);
+							queue->items[i] = copy;
+							insert = 1;
+						}
+						i++;
+					}
+					if (insert == 0) {
+						//we need to insert the new item at the end of the array
+						queue->items[queue->num_items] = copy;
+					}
+					queue->num_items++;
+				}
+			}
+		} else {
+			ItemPQ *copy = duplicate(item);
+			if (copy != NULL) {
+				queue->items[0] = copy;
+				queue->num_items = 1;
+			}
+		}
 	}
 }
 
 ItemPQ dequeuePQ(PQ queue) {
-	/* Removes and returns the item (ItemPQ) with smallest 'value'.
-	   For items with equal 'value', observes FIFO.
-	   Returns null if this queue is empty.
-	*/
-	if (queue != NULL && queue->nitems > 0) {
-		ItemPQnode smallest = queue->front;
-		for (ItemPQnode node = queue->front->next; node != NULL; node = node->next) {
-			if (node->item->value < smallest->item->value) { //not <= to observe FIFO
-				smallest = node;
-			}
-		}
-		return *smallest->item;
+	//remove the top element of the sorted array of items
+	ItemPQ *top = queue->items[0];
+	if (queue->num_items == 1) {
+		//we're removing the only item
+		queue->items[0] = NULL;
+	} else {
+		//there are other items below
+		shift(queue, 1, 0);
 	}
-	fprintf(stderr, "Error!\n");
-	exit(EXIT_FAILURE);
+	queue->num_items--;
+	return *top;
 }
 
 void updatePQ(PQ queue, ItemPQ item) {
-	/* Updates item with a given 'key' value, by updating that item's value to the given 'value'.
-	   If item with 'key' does not exist in the queue, no action is taken
-	*/
-	printf("updating\n");
-	for (ItemPQnode scan = queue->front; scan != NULL; scan = scan->next) {
-		printf("compare %d,%d against %d,%d\n", scan->item->key, scan->item->value, item.key, item.value);
-		if (scan->item->key == item.key) {
-			printf("match at %d, %d\n", item.key, item.value);
-			scan->item->value = item.value;
-			return;
+	//scan the items array for the matching key, and update the node's value, then shift its position accordingly
+	if (queue != NULL) {
+		if (queue->num_items > 0) {
+			//first, scan the queue for a match
+			int i = 0;
+			ItemPQ *scan;
+			int j = 0;
+			int insert = 0;
+			while (i < queue->num_items) {
+				scan = queue->items[i]; //this will hold onto our shifting node
+				if (scan->key == item.key) {
+					//we have a key match, so just update
+					insert = 0;
+					if (item.value < scan->value) {
+						//we need to update and move scan up the array
+						scan->value = item.value;
+						shift(queue, i+1, 0); //remove scan from the array of items for now
+						j = i-1;
+						while (j >= 0) {
+							if (queue->items[j]->value <= scan->value) {
+								//we have found our insert position
+								shift(queue, j+1, 1); //make room for scan's insertion
+								queue->items[j+1] = scan; //insert scan in the correct, freed space
+								insert = 1;
+							}
+							j--;
+						}
+						if (insert == 0) {
+							//insert at the top
+							shift(queue, 0, 1);
+							queue->items[0] = scan;
+						}
+					} else if (item.value > scan->value) {
+						//we need to update and move scan down the array
+						scan->value = item.value;
+						shift(queue, i+1, 0); //remove scan from the array of items for now
+						j = i+1;
+						while (j < queue->num_items-1) { //-1 since we removed scan
+							if (queue->items[j]->value >= scan->value) {
+								//we have found our insert position
+								shift(queue, j-1, 0); //make room for scan's insertion
+								queue->items[j-1] = scan; //insert scan in the correct, freed space
+								insert = 1;
+							}
+							j++;
+						}
+						if (insert == 0) {
+							//insert at the bottom
+							queue->items[queue->num_items-1] = scan;
+						}
+					}
+				}
+				i++;
+			}
 		}
 	}
 }
 
 int PQEmpty(PQ queue) {
-	if (queue->nitems == 0) return 1;
+	//check if queue is empty
+	if (queue->num_items == 0) return 1;
 	return 0;
 }
 
 void showPQ(PQ queue) {
-	//print the queue
-	if (queue != NULL) {
-		ItemPQnode scan = queue->front;
-		while (scan != NULL) {
-			printf("key: %d value: %d\n", scan->item->key, scan->item->value);
-			scan = scan->next;
-		}
+	//print the items in the queue in order
+	printf("Number of items = %d, array length = %d\n", queue->num_items, queue->arr_size);
+	int i = 0;
+	while (i < queue->num_items) {
+		printf("Node %d = (key %d, value %d)\n", i, queue->items[i]->key, queue->items[i]->value);
+		i++;
 	}
 }
 
 void freePQ(PQ queue) {
-	if (queue != NULL) {
-		ItemPQnode delete;
-		for (ItemPQnode scan = queue->front; scan != NULL; scan = scan->next) {
-			delete = scan;
-			scan = scan->next;
-			free(delete->item);
-			free(delete);
-		}
-		free(queue);
-	}
+	free(queue->items);
+	free(queue);
 }
