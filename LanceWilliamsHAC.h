@@ -11,9 +11,6 @@ typedef struct DNode {
    Dendrogram left, right;
 } DNode;
 
-
-
-
 /* 
  * Finds Dendrogram using Lance-Williams algorithm (as discussed in the specs) 
    for the given graph g and the specified method for agglomerative clustering.
@@ -24,6 +21,5 @@ typedef struct DNode {
  * 
  */
 Dendrogram LanceWilliamsHAC(Graph g, int method);
-
 
 void freeDendrogram(Dendrogram d);
