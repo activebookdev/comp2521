@@ -81,7 +81,7 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
   Graph g = readGraph(argv[1]);
-    graphVis(g, DEFAULT);
+    //graphVis(g, DEFAULT);
     int i;
     for(i=0; i<numVerticies(g); i++) {
         ShortestPaths paths = dijkstra(g,i);

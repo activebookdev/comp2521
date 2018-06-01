@@ -40,7 +40,7 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
         fprintf(stderr, "Error!\n");
 		exit(EXIT_FAILURE);
     }
-    printf("created paths pointer\n");
+    //printf("created paths pointer\n");
     paths->noNodes = numVerticies(g);
     paths->src = v;
     paths->dist = malloc(paths->noNodes*sizeof(int));
@@ -48,7 +48,7 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
         fprintf(stderr, "Error!\n");
         exit(EXIT_FAILURE);
     }
-    printf("created paths dist\n");
+    //printf("created paths dist\n");
     paths->pred = malloc(paths->noNodes*sizeof(PredNode *));
     if (paths->pred == NULL) {
         fprintf(stderr, "Error!\n");
@@ -59,7 +59,7 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
         paths->pred[k] = NULL;
         k++;
     }
-    printf("created paths pred array\n");
+    //printf("created paths pred array\n");
     PQ PathPQ = newPQ(); //the priority queue for inspecting nodes
     int visited[numVerticies(g)];
     AdjList current; //our pointer for scanning through the graph
@@ -75,25 +75,25 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
     PredNode *scan; //for scanning through the predecessor list of a vertex
     PredNode *delete; //used for clearing nodes from predecessor lists
     int append = 0;
-    printf("initialised variables\n");
+    //printf("initialised variables\n");
     while (i < numVerticies(g)) {
         if (i == v) { //this is the src node
             temp = newPQnode(i, 0);
             paths->dist[i] = 0;
             visited[i] = 1;
-            printf("key %d value %d\n", temp->key, temp->value);
+            //printf("key %d value %d\n", temp->key, temp->value);
         }
         else {
             temp = newPQnode(i, INT_MAX); //to simulate infinity
             paths->dist[i] = INT_MAX;
-            printf("key %d value %d\n", temp->key, temp->value);
+            //printf("key %d value %d\n", temp->key, temp->value);
             visited[i] =0;
         }
         addPQ(PathPQ, *temp);
         i++;
     }
-    printf("fills distance array\n");
-    showPQ(PathPQ);
+    //printf("fills distance array\n");
+    //showPQ(PathPQ);
     //at this point, our priority queue has all vertices in the graph g, and will grab vertex v first
     current = outIncident(g, v);
     while (current!=NULL) { //visit all neighbours initially
@@ -176,9 +176,8 @@ void showShortestPaths(ShortestPaths p) {
 
 void freeShortestPaths(ShortestPaths p) {
     ShortestPaths *delete = &p;
-    int count = delete->noNodes;
     free(delete->dist); //free the distance array
-    int i = 0;
+    /*int i = 0;
     PredNode *scan;
     PredNode *scan2;
     while (i < count) { //free the list for each vertex in the pred array
@@ -192,6 +191,7 @@ void freeShortestPaths(ShortestPaths p) {
         free(scan);
         i++;
     }
-    free(delete->pred);
-    free(delete); //free the shortestpaths struct itself
+    
+    //free(delete->pred);
+    free(delete); //free the shortestpaths struct itself*/
 }
