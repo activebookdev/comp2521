@@ -177,21 +177,21 @@ void showShortestPaths(ShortestPaths p) {
 void freeShortestPaths(ShortestPaths p) {
     ShortestPaths *delete = &p;
     free(delete->dist); //free the distance array
-    /*int i = 0;
-    PredNode *scan;
-    PredNode *scan2;
-    while (i < count) { //free the list for each vertex in the pred array
-        scan = delete->pred[i];
-        while (scan != NULL) {
+    int i = 0;
+    //PredNode scan;
+    //PredNode *scan2;
+    while (i < delete->noNodes) { //free the list for each vertex in the pred array
+        free(delete->pred[i]);
+        /*while (scan != NULL) {
             scan2 = scan;
             scan = scan->next;
             free(scan2);
         }
-        scan->next = NULL;
-        free(scan);
+        scan->next = NULL;*/
+        //free(scan);
         i++;
     }
     
-    //free(delete->pred);
-    free(delete); //free the shortestpaths struct itself*/
+    free(delete->pred);
+    //free(delete); //free the shortestpaths struct itself*/
 }
