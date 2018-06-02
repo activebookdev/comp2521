@@ -145,14 +145,18 @@ NodeValues closenessCentrality(Graph g) {
 			dsum += paths->dist[i];
 		}
 		//printf("For node %d: numvertices=%d, reach=%d, dsum=%d\n", v, numVerticies(g), reach, dsum); used for debugging
-		closeness = (double)(reach-1)*(reach-1)/((numVerticies(g)-1)*dsum);
+		if (dsum == 0) {
+			closeness = 0; //otherwise we would be dividing by zero
+		} else {
+			closeness = (double)(reach-1)*(reach-1)/((numVerticies(g)-1)*dsum);
+		}
 		centrality->values[v] = closeness;
 	}
 	return *centrality;
 }
 
 int num_pred_paths(int s, int t, ShortestPaths *paths, int v) {
-	//return the number of paths from s to t that pass through v
+	//return the number of shortest paths from s to t that pass through v
 	int num = 0;
 	PredNode *predecessor = paths->pred[t]; //the list of predecessors of node t
 	while (predecessor != NULL) {
@@ -169,7 +173,22 @@ int num_pred_paths(int s, int t, ShortestPaths *paths, int v) {
 	return num;
 }
 
-int betweenness(Graph g, Vertex v) {
+int count_paths(int s, int t, ShortestPaths *paths) {
+	//return the total number of shortest paths from s to t
+	int num = 0;
+	PredNode *predecessor = paths->pred[t]; //the list of predecessors of node t
+	while (predecessor != NULL) {
+		if (predecessor->v != s) {
+			num += count_paths(s, predecessor->v, paths);
+		} else {
+			num += 1;
+		}
+		predecessor = predecessor->next;
+	}
+	return num;
+}
+
+double betweenness(Graph g, Vertex v) {
 	int betweenness = 0;
 	ShortestPaths temp;
 	ShortestPaths *paths;
@@ -178,9 +197,10 @@ int betweenness(Graph g, Vertex v) {
 			temp = dijkstra(g, v);
 			paths = &temp;
 			for (int t = 0; t < numVerticies(g); t++) {
-				if (t != v) {
+				if (t != v && t != s) {
 					//find the number of shortest paths from s to t that pass through v
-					betweenness += num_pred_paths(s, t, paths, v);
+					printf("Vertex %d, path from %d to %d, thruV=%d, total=%d\n", v, s, t, num_pred_paths(s, t, paths, v), count_paths(s, t, paths));
+					betweenness += (double)num_pred_paths(s, t, paths, v)/count_paths(s, t, paths);
 				}
 			}
 		}
@@ -192,7 +212,7 @@ NodeValues betweennessCentrality(Graph g) {
 	//return a struct with an array of the number of incoming edges for each vertex
 	NodeValues *centrality = newCentralityStruct(numVerticies(g));
 	for (int v = 0; v < numVerticies(g); v++) {
-		centrality->values[v] = (double)betweenness(g, v);
+		centrality->values[v] = betweenness(g, v);
 	}
 	return *centrality;
 }
