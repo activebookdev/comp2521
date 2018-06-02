@@ -101,6 +101,7 @@ void addPQ(PQ queue, ItemPQ item) {
 								shift(queue, j+1, 1); //make room for scan's insertion
 								queue->items[j+1] = scan; //insert scan in the correct, freed space
 								insert = 1;
+								break;
 							}
 							j--;
 						}
@@ -120,6 +121,7 @@ void addPQ(PQ queue, ItemPQ item) {
 								shift(queue, j-1, 0); //make room for scan's insertion
 								queue->items[j-1] = scan; //insert scan in the correct, freed space
 								insert = 1;
+								break;
 							}
 							j++;
 						}
@@ -211,6 +213,7 @@ void updatePQ(PQ queue, ItemPQ item) {
 								shift(queue, j+1, 1); //make room for scan's insertion
 								queue->items[j+1] = scan; //insert scan in the correct, freed space
 								insert = 1;
+								break;
 							}
 							j--;
 						}
@@ -230,6 +233,7 @@ void updatePQ(PQ queue, ItemPQ item) {
 								shift(queue, j-1, 0); //make room for scan's insertion
 								queue->items[j-1] = scan; //insert scan in the correct, freed space
 								insert = 1;
+								break;
 							}
 							j++;
 						}

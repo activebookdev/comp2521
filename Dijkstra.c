@@ -91,22 +91,10 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
         i++;
     }
 
-    //TESTING:
-    if (v == 33) showPQ(PathPQ);
-
     while (!PQEmpty(PathPQ)) {
-        if (v == 33) printf("before dequeue\n");
-        if (v == 33) showPQ(PathPQ);
         tmp = dequeuePQ(PathPQ); //get the vertex with the smallest distance
         temp = &tmp;
         current_vertex = temp->key;
-        if (v == 33) {
-            printf("after dequeue\n");
-            printf("current vertex is %d\n", current_vertex);
-        }
-        //TESTING:
-        if (v == 33) showPQ(PathPQ);
-
         current = outIncident(g, current_vertex); //the list of all vertices pointed to by our current node (outgoing edges)
         isolated = inIncident(g, current_vertex);
         if (isolated == NULL) { //the node is isolated
@@ -122,8 +110,6 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
                     //we have found a shorter path, so clear the whole pred list for neighbour and insert the new predecessor current_vertex
                     save = newPQnode(neighbour, new_dist); //save is a queue node for neighbour vertex w, with new shortest distance alt
                     updatePQ(PathPQ, *save); //update w's distance in our priority queue to ensure acccurate inspection later
-                    if (v == 33) printf("just updated neighbour %d's distance\n", neighbour);
-                    if (v == 33) showPQ(PathPQ);
                     paths->dist[neighbour] = new_dist; //update our distance array
                     if (paths->pred[neighbour] == NULL) {
                         //we have not yet found a shorter path than infinity for this node, so insert a new predecessor
