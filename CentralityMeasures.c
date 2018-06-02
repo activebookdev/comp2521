@@ -178,12 +178,12 @@ int count_paths(int s, int t, ShortestPaths *paths) {
 	int num = 0;
 	PredNode *predecessor = paths->pred[t]; //the list of predecessors of node t
 	while (predecessor != NULL) {
-		printf("Pred of %d is %d, ", t, predecessor->v);
+		//printf("Pred of %d is %d, ", t, predecessor->v);
 		if (predecessor->v != s) {
-			printf("which != s(%d)\n", s);
+			//printf("which != s(%d)\n", s);
 			num += count_paths(s, predecessor->v, paths);
 		} else {
-			printf("which == s(%d)\n", s);
+			//printf("which == s(%d)\n", s);
 			num += 1;
 		}
 		predecessor = predecessor->next;
@@ -195,19 +195,21 @@ double betweenness(Graph g, Vertex v) {
 	int betweenness = 0;
 	ShortestPaths temp;
 	ShortestPaths *paths;
-	int total_paths;
+	int total_paths = 0;
 	for (int s = 0; s < numVerticies(g); s++) {
 		if (s != v) {
-			temp = dijkstra(g, v);
+			temp = dijkstra(g, s);
 			paths = &temp;
 			for (int t = 0; t < numVerticies(g); t++) {
 				if (t != v && t != s) {
 					//find the number of shortest paths from s to t that pass through v
-					printf("==========\n");
 					total_paths = count_paths(s, t, paths);
-					printf("Vertex %d, path from %d to %d, thruV=%d, total=%d\n", v, s, t, num_pred_paths(s, t, paths, v), total_paths);
-					printf("==========\n\n");
-					betweenness += (double)num_pred_paths(s, t, paths, v)/total_paths;
+					if (total_paths == 0) { //we don't want to divide by zero
+						betweenness += 0;
+					} else {
+						betweenness += (double)num_pred_paths(s, t, paths, v)/total_paths;
+					}
+					//printf("Vertex %d, path from %d to %d, thruV=%d, total=%d\n", v, s, t, num_pred_paths(s, t, paths, v), total_paths);
 				}
 			}
 		}
