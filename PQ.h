@@ -10,7 +10,6 @@ typedef struct ItemPQ {
    int         value;
 } ItemPQ;
 
-
 /* Creates new priority queue, that can store items of type ItemPQ.
 */
 PQ newPQ();

@@ -177,13 +177,8 @@ void addPQ(PQ queue, ItemPQ item) {
 ItemPQ dequeuePQ(PQ queue) {
 	//remove the top element of the sorted array of items
 	ItemPQ *top = queue->items[0];
-	if (queue->num_items == 1) {
-		//we're removing the only item
-		queue->items[0] = NULL;
-	} else {
-		//there are other items below
-		shift(queue, 1, 0);
-	}
+	queue->items[0] = NULL;
+	shift(queue, 1, 0);
 	queue->num_items--;
 	return *top;
 }
