@@ -78,8 +78,14 @@ NodeValues inDegreeCentrality(Graph g) {
 }
 
 NodeValues degreeCentrality(Graph g) {
-	//for undirected graph
-	return outDegreeCentrality(g); //because the outgoing edges are the same as the incoming ones (there's no direction)
+	//for undirected graph, simply add the indegree and outdegree of each node
+	NodeValues *incoming = newCentralityStruct(numVerticies(g));
+	double degree = 0;
+	for (int v = 0; v < numVerticies(g); v++) {
+		degree = (double)indegree(g, v) + (double)outdegree(g, v);
+		incoming->values[v] = degree;
+	}
+	return *incoming;
 }
 
 void visit_reach(Graph g, Vertex v) {
@@ -119,7 +125,7 @@ int numReach(Graph g, Vertex v) {
 			num++;
 		}
 	}
-	return num-1; //-1 because we don't want to count v itself
+	return num;
 }
 
 NodeValues closenessCentrality(Graph g) {
@@ -138,6 +144,7 @@ NodeValues closenessCentrality(Graph g) {
 		for (i = 0; i < numVerticies(g); i++) { //sum the shortest path distances for each vertex
 			dsum += paths->dist[i];
 		}
+		//printf("For node %d: numvertices=%d, reach=%d, dsum=%d\n", v, numVerticies(g), reach, dsum); used for debugging
 		closeness = (double)(reach-1)*(reach-1)/((numVerticies(g)-1)*dsum);
 		centrality->values[v] = closeness;
 	}
@@ -199,12 +206,13 @@ NodeValues betweennessCentralityNormalised(Graph g) {
 	return centrality;
 }
 
-void  showNodeValues(NodeValues v) {
-	//TODO
+void showNodeValues(NodeValues v) {
+	//print out the value-key pairs
+	for (int i = 0; i < v.noNodes; i++) {
+		printf("%d: %lf\n", i, v.values[i]);
+	}
 }
 
-void  freeNodeValues(NodeValues v) {
-	NodeValues *delete = &v;
-	free(delete->values);
-	free(delete);
+void freeNodeValues(NodeValues v) {
+	//TODO
 }
